@@ -1,0 +1,181 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=.8in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,longtable,tabularx,array,listings,fancyhdr,hyperref,amsmath,needspace}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+\pagestyle{fancy}\fancyhf{}\lhead{IFT 212 -- Computer Architecture and Organization}\rhead{Lab Assessment Solutions}\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}\setlength{\parskip}{.4em}\renewcommand{\arraystretch}{1.08}
+\setlength{\tabcolsep}{5pt}
+\lstset{basicstyle=\ttfamily\small,columns=fullflexible,keepspaces=true,breaklines=true,breakatwhitespace=false,frame=single,numbers=none,showstringspaces=false,tabsize=4,xleftmargin=.7em,framexleftmargin=.3em}
+\newcommand{\blank}{\textit{(student detail to be supplied)}}
+\hypersetup{pageanchor=false}
+\begin{document}
+\begin{titlepage}\centering\vspace*{1in}{\Large MIVA OPEN UNIVERSITY\par}\vspace{.5in}{\huge\bfseries IFT 212\par}{\LARGE Computer Architecture and Organization\par}\vspace{.4in}{\Large Lab Assessment Solutions\par}\vspace{.8in}
+\begin{tabular}{|l|l|}\hline\textbf{Student name:}&\blank\\\hline\textbf{Email address:}&\blank\\\hline\textbf{Department:}&\blank\\\hline\textbf{Matriculation number:}&\blank\\\hline\textbf{Institution:}&Miva Open University\\\hline\textbf{Course code:}&IFT 212\\\hline\textbf{Course title:}&Computer Architecture and Organization\\\hline\textbf{Submission date:}&\blank\\\hline\end{tabular}\vfill Academic submission draft\end{titlepage}
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}\tableofcontents\clearpage\pagenumbering{arabic}
+\section*{Assumptions and notation}\addcontentsline{toc}{section}{Assumptions and notation}
+Stages are Instruction Fetch (IF), Instruction Decode and Register Read (ID), Execute (EX), Memory Access (MEM), and Write-Back (WB). Assessment 1 is sequential, one cycle per stage, without overlap. Assessment 2 follows the explicit ideal no-stall instruction. Assessments 4 and 5 use no forwarding; registers are read in ID and written in WB, and a WB write is visible to an ID read in the same cycle. A dependent instruction waits in ID and a bubble is inserted into EX.
+
+\section[ASSESSMENT 1: SEQUENTIAL EXECUTION CYCLE CALCULATION]{ASSESSMENT 1: SEQUENTIAL EXECUTION\\CYCLE CALCULATION}
+\textbf{Topic: Non-Pipelined Performance Analysis.}
+
+For the given instruction sequence, the instructions execute sequentially, and each pipeline stage takes one cycle.
+
+\textbf{Instruction Sequence}
+\begin{enumerate}
+\item \texttt{LOADI R1, 10} \quad R1 = 10
+\item \texttt{LOADI R2, 20} \quad R2 = 20
+\item \texttt{ADD R3, R1, R2} \quad R3 = R1 + R2
+\item \texttt{SUB R4, R3, R1} \quad R4 = R3 $-$ R1
+\item \texttt{STORE R4, 100} \quad Mem[100] = R4
+\item \texttt{LOAD R5, 100} \quad R5 = Mem[100]
+\end{enumerate}
+\subsection*{Q1. Cycle Count Table}
+Each instruction completes all five stages before the next starts.
+\begin{longtable}{|c|*{5}{>{\centering\arraybackslash}p{.9in}|}}
+\hline\textbf{Cycle}&\textbf{Fetch}&\textbf{Decode}&\textbf{Execute}&\textbf{Memory}&\textbf{Write-Back}\\\hline\endfirsthead
+\hline\textbf{Cycle}&\textbf{Fetch}&\textbf{Decode}&\textbf{Execute}&\textbf{Memory}&\textbf{Write-Back}\\\hline\endhead
+1&I1&--&--&--&--\\\hline 2&--&I1&--&--&--\\\hline 3&--&--&I1&--&--\\\hline 4&--&--&--&I1&--\\\hline 5&--&--&--&--&I1\\\hline
+6&I2&--&--&--&--\\\hline 7&--&I2&--&--&--\\\hline 8&--&--&I2&--&--\\\hline 9&--&--&--&I2&--\\\hline 10&--&--&--&--&I2\\\hline
+11&I3&--&--&--&--\\\hline 12&--&I3&--&--&--\\\hline 13&--&--&I3&--&--\\\hline 14&--&--&--&I3&--\\\hline 15&--&--&--&--&I3\\\hline
+16&I4&--&--&--&--\\\hline 17&--&I4&--&--&--\\\hline 18&--&--&I4&--&--\\\hline 19&--&--&--&I4&--\\\hline 20&--&--&--&--&I4\\\hline
+21&I5&--&--&--&--\\\hline 22&--&I5&--&--&--\\\hline 23&--&--&I5&--&--\\\hline 24&--&--&--&I5&--\\\hline 25&--&--&--&--&I5\\\hline
+26&I6&--&--&--&--\\\hline 27&--&I6&--&--&--\\\hline 28&--&--&I6&--&--\\\hline 29&--&--&--&I6&--\\\hline 30&--&--&--&--&I6\\\hline
+\end{longtable}
+\subsection*{Q2. Total Cycles}
+$6\times5=\boxed{30\text{ cycles}}$.
+\subsection*{Q3. Final Register Values}
+From zero: R1=10, R2=20, R3=10+20=30, R4=30-10=20. The load reads the value stored at address 100. Thus R1=10, R2=20, R3=30, R4=20, R5=20.
+\subsection*{Q4. Memory Value}
+STORE writes R4 to address 100: $\operatorname{Mem}[100]=\boxed{20}$.
+\subsection*{Q5. CPI Calculation}
+$\mathrm{CPI}=30/6=\boxed{5}$ cycles/instruction.
+
+\section{ASSESSMENT 2: PIPELINE DIAGRAM CONSTRUCTION}
+\textbf{Topic: 5-Stage Pipeline Instruction Flow.}
+
+This assessment assumes an ideal five-stage pipeline without hazards or stalls.
+
+\textbf{Instruction Sequence}
+
+\textbf{I1:} \texttt{LOADI R1, 5}\\
+\textbf{I2:} \texttt{LOADI R2, 3}\\
+\textbf{I3:} \texttt{ADD R3, R1, R2}\\
+\textbf{I4:} \texttt{SUB R4, R3, R1}
+
+\subsection*{Q1. Pipeline Diagram}
+\begin{center}\small\begin{tabular}{|c|*{5}{>{\centering\arraybackslash}p{.9in}|}}
+\hline\textbf{Cycle}&\textbf{Fetch}&\textbf{Decode}&\textbf{Execute}&\textbf{Memory}&\textbf{Write-Back}\\\hline
+1&I1&--&--&--&--\\\hline 2&I2&I1&--&--&--\\\hline 3&I3&I2&I1&--&--\\\hline 4&I4&I3&I2&I1&--\\\hline
+5&--&I4&I3&I2&I1\\\hline 6&--&--&I4&I3&I2\\\hline 7&--&--&--&I4&I3\\\hline 8&--&--&--&--&I4\\\hline
+\end{tabular}\end{center}
+\subsection*{Q2. Total Cycles}
+I4 finishes WB in cycle 8: $\boxed{8\text{ cycles}}$.
+\subsection*{Q3. Formula Derivation}
+For $N$ instructions on $k$ ideal stages, cycles are $N+k-1$. For five stages: $\boxed{\mathrm{Cycles}=N+4}$.
+\subsection*{Q4. Stage Activity}
+Cycle 4: Fetch I4; Decode I3; Execute I2; Memory I1; Write-Back empty.
+
+\section{ASSESSMENT 3: PIPELINE SPEEDUP CALCULATION}
+\textbf{Topic: Performance Comparison.}
+\subsection*{Q1. Complete the Table}
+The supplied rows follow $N+4$. D: $20+4=\boxed{24}$ cycles. E: $100+4=\boxed{104}$ cycles.
+\subsection*{Q2. Speedup Calculation}
+$\mathrm{Speedup}=\mathrm{Sequential\ cycles}/\mathrm{Pipelined\ cycles}$.
+\begin{center}\begin{tabular}{|c|c|r|r|r|}\hline\textbf{Program}&\textbf{Instructions}&\textbf{Sequential}&\textbf{Pipelined}&\textbf{Speedup}\\\hline
+A&4&20&8&2.5000\\\hline B&8&40&12&3.3333\\\hline C&12&60&16&3.7500\\\hline D&20&100&24&4.1667\\\hline E&100&500&104&4.8077\\\hline\end{tabular}\end{center}
+\subsection*{Q3. Analysis Questions}
+\textbf{a) Trend.} Speedup rises with instruction count because pipeline fill and drain are spread across more work.\par\smallskip
+\textbf{b) Theoretical maximum.} Maximum is $\boxed{5\times}$ for five stages under ideal conditions with full utilization.\par\smallskip
+\textbf{c) Program A.} Four instructions are too few to amortize fill and drain. Speedup is $20/8=2.5$, below 5.\par\smallskip
+\textbf{d) Program E at 104 cycles.} The prompt says 104 cycles instead of the ideal, although the ideal formula also gives 104 for 100 instructions. Using 104 as the pipelined count gives $500/104\approx\boxed{4.8077\times}$.
+
+\section{ASSESSMENT 4: DATA HAZARD IDENTIFICATION}
+\textbf{Topic: Recognizing RAW Hazards.}
+
+\textbf{Instruction Sequences}
+
+\textbf{Sequence 1}\\
+\texttt{I1: ADD R1, R2, R3}\\
+\texttt{I2: SUB R4, R1, R5}\\
+\texttt{I3: ADD R6, R4, R7}
+
+\textbf{Sequence 2}\\
+\texttt{I1: LOADI R1, 10}\\
+\texttt{I2: LOADI R2, 20}\\
+\texttt{I3: ADD R3, R1, R2}\\
+\texttt{I4: STORE R3, 100}\\
+\texttt{I5: LOAD R4, 100}
+
+\textbf{Sequence 3}\\
+\texttt{I1: LOADI R1, 5}\\
+\texttt{I2: ADD R2, R1, R3}\\
+\texttt{I3: SUB R4, R2, R1}\\
+\texttt{I4: ADD R5, R4, R6}
+
+\subsection*{Q1. Hazard Identification}
+\begin{center}\begin{tabularx}{\linewidth}{|c|X|}\hline\textbf{Sequence}&\textbf{RAW hazards}\\\hline
+1&I2 reads R1 before I1 writes it; I3 reads R4 before I2 writes it.\\\hline
+2&I3 reads R1 before I1 writes it; I3 reads R2 before I2 writes it; I4 reads R3 before I3 writes it.\\\hline
+3&I2 reads R1 before I1 writes it; I3 reads R2 before I2 writes it; I3 reads R1 before I1 writes it; I4 reads R4 before I3 writes it.\\\hline\end{tabularx}\end{center}
+In Sequence 2, LOAD R4, 100 writes R4 and reads no R4; 100 is an immediate address. STORE reads R3 and writes memory.
+\Needspace{14\baselineskip}
+\subsection*{Q2. Stall Cycle Calculation}
+Under the stated model, ID waits while a producer is in EX or MEM; WB writes are visible to ID in that cycle.
+\begin{center}\begin{tabular}{|p{3.5in}|c|}\hline\textbf{Producer position when I2 reads in ID}&\textbf{Stalls}\\\hline I1 in EX&2\\\hline I1 in MEM&1\\\hline I1 in WB&0\\\hline\end{tabular}\end{center}
+\subsection*{Q3. Total Stall Cycles}
+Cycle-by-cycle simulation of Sequence 3 gives six stalls. S marks an ID stall and an EX bubble. During a stall, instruction fetch and the IF/ID state are held; a repeated instruction label in IF represents the held instruction, not a new fetch. I1's R1 write is available before I3 reaches ID.
+\begin{center}\scriptsize\renewcommand{\arraystretch}{.85}\begin{tabular}{|c|*{5}{>{\centering\arraybackslash}p{.49in}|}}
+\hline\textbf{Cycle}&\textbf{IF}&\textbf{ID}&\textbf{EX}&\textbf{MEM}&\textbf{WB}\\\hline
+1&I1&--&--&--&--\\\hline 2&I2&I1&--&--&--\\\hline 3&I2&I2 (S)&I1&--&--\\\hline
+4&I2&I2 (S)&--&I1&--\\\hline 5&I3&I2&--&--&I1\\\hline 6&I3&I3 (S)&I2&--&--\\\hline
+7&I3&I3 (S)&--&I2&--\\\hline 8&I4&I3&--&--&I2\\\hline 9&I4&I4 (S)&I3&--&--\\\hline
+10&I4&I4 (S)&--&I3&--\\\hline 11&--&I4&--&--&I3\\\hline
+12&--&--&I4&--&--\\\hline 13&--&--&--&I4&--\\\hline 14&--&--&--&--&I4\\\hline
+\end{tabular}\end{center}
+I1-to-I2, I2-to-I3, and I3-to-I4 each need two stalls: $2+2+2=\boxed{6}$. The I1-to-I3 dependency adds no stall.
+\subsection*{Q4. Pipeline Stage Timing}
+Registers are read in \textbf{ID} and written in \textbf{WB}.
+
+\clearpage
+\section{ASSESSMENT 5: HAZARD DETECTION LOGIC}
+\textbf{Topic: Implementing Hazard Detection.}
+
+\textbf{Given Pipeline State}
+
+\begin{center}\begin{tabularx}{\linewidth}{|c|X|c|c|}\hline
+\textbf{Register}&\textbf{Instruction}&\textbf{Destination}&\textbf{Valid}\\\hline
+IF/ID&\texttt{ADD R5, R1, R2}&R5&True\\\hline
+ID/EX&\texttt{SUB R4, R3, R1}&R4&True\\\hline
+EX/MEM&\texttt{LOADI R1, 10}&R1&True\\\hline
+MEM/WB&\texttt{ADD R2, R6, R7}&R2&True\\\hline
+\end{tabularx}\end{center}
+
+\subsection*{Q1. Hazard Detection Logic Pseudocode}
+Detection flags a RAW match. Separate stage-aware control logic determines stall duration.
+\begin{lstlisting}[language=Python,caption={RAW hazard detection pseudocode}]
+def detect_raw_hazard(decoded_instr):
+    src_regs = []
+    if decoded_instr.src1 is not None:
+        src_regs.append(decoded_instr.src1)
+    if decoded_instr.src2 is not None:
+        src_regs.append(decoded_instr.src2)
+
+    for stage in (ID_EX, EX_MEM, MEM_WB):
+        if (stage.valid and stage.dest_reg is not None
+                and stage.dest_reg in src_regs):
+            return True
+    return False
+\end{lstlisting}
+\subsection*{Q2. Hazard Detection for Given State}
+ADD R5, R1, R2 reads R1 and R2.
+\begin{center}\begin{tabular}{|l|c|c|c|}\hline\textbf{Stage}&\textbf{Pipeline register}&\textbf{Destination}&\textbf{Match?}\\\hline
+EX&ID/EX&R4&No\\\hline MEM&EX/MEM&R1&Yes (R1)\\\hline WB&MEM/WB&R2&Yes (R2)\\\hline\end{tabular}\end{center}
+Hazard: \textbf{Yes}; matching registers: \textbf{R1 and R2}.
+\subsection*{Q3. Stall Decision}
+R1 is in EX/MEM and will not be written until the next cycle, so ADD waits \textbf{1 cycle}. R2 is in WB and is available under the same-cycle WB-write/ID-read assumption. Hold the consumer in IF/ID and insert a \textbf{bubble / NOP} into EX. In the next cycle R1 is in WB and the ID read proceeds.
+\subsection*{Q4. Modified Detection}
+An EX-only check misses the snapshot's matches: ID/EX writes R4, while EX/MEM writes R1 and MEM/WB writes R2. Ignoring later stages can let a dependent instruction read too early. Detection flags matches; stage-aware control decides which matches still require waiting.
+\end{document}

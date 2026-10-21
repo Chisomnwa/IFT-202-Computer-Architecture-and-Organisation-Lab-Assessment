@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# LaTeX build files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# Temporary build output
+/tmp/
+/output/*
+!/output/.gitkeep
+
+# Private student details (keep personal information out of Git)
+/private/
+student_details.*
+student-details.*
+report/student_details.*
+report/student-details.*
+
+# Local OS/editor files
+.DS_Store
+.idea/
+.vscode/
